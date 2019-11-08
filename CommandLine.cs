@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-using TwistLockAPI;
+﻿using System;
+using System.Diagnostics;
 
-namespace TwistLockAPI
+namespace TwistCLIFive
 {
     public static class coms
     {
@@ -14,6 +14,7 @@ namespace TwistLockAPI
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "/bin/bash",
+
                     Arguments = $"-c \"{escapedArgs}\"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -25,5 +26,24 @@ namespace TwistLockAPI
             process.WaitForExit();
             return result;
         }
+
+        public static string WinCli(this string cmd)
+        {
+            Process process = new Process();
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
+            process.Start();
+
+            process.StandardInput.WriteLine(cmd);
+            process.StandardInput.Flush();
+            process.StandardInput.Close();
+            process.WaitForExit();
+            string result = process.StandardOutput.ReadToEnd();
+            return result;
+        }
     }
 }
+
