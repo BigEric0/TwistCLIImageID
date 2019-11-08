@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -26,11 +27,17 @@ namespace TwistCLI
                 coms.Bash($"chmod u+x {twistLockUnix}");
                 string lineNum = coms.Bash("docker images | head | awk 'END{print NR}'");
                 int lineInt = Int32.Parse(lineNum);
+                List<string> scanList = new List<string>();
                 for (int i = 2; i <= lineInt; i++)
                 {
                     string dockerImageCom = coms.Bash($"docker images | head -{lineInt} | awk '{{print $3}}' | sed -n '{i} p'");
                     string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {dockerImageCom}");
                     Console.Write(twistScan);
+                    scanList.Add(twistScan);
+                    if (scanList.Contains("FAIL"))
+                    {
+                        break;
+                    }
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -41,16 +48,22 @@ namespace TwistCLI
                     Directory.Delete(twistDir, true);
                 }
                 coms.Bash($"mkdir {twistDir}");
-
+                
                 coms.Bash($"curl -k -u {username}:{password} --output {twistLockUnix} {address}/api/v1/util/twistcli");
                 coms.Bash($"chmod u+x {twistLockUnix}");
                 string lineNum = coms.Bash("docker images | head | awk 'END{print NR}'");
                 int lineInt = Int32.Parse(lineNum);
+                List<string> scanList = new List<string>();
                 for (int i = 2; i <= lineInt; i++)
                 {
                     string dockerImageCom = coms.Bash($"docker images | head -{lineInt} | awk '{{print $3}}' | sed -n '{i} p'");
                     string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {dockerImageCom}");
                     Console.Write(twistScan);
+                    scanList.Add(twistScan);
+                    if (scanList.Contains("FAIL"))
+                    {
+                        break;
+                    }
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -69,10 +82,16 @@ namespace TwistCLI
                 string imageIds = "for /f \"tokens=3 skip=1\" %i in (\'docker images\') do @echo %i";
                 string getImageIds = coms.WinCli(imageIds);
                 string[] lineInt = getImageIds.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                List<string> scanList = new List<string>();
                 foreach (var i in lineInt)
                 {
                     string twistScan = coms.WinCli($"{twistLock} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {i}");
                     Console.WriteLine(twistScan);
+                    scanList.Add(twistScan);
+                    if (scanList.Contains("FAIL"))
+                    {
+                        break;
+                    }
                 }
             }
             else
@@ -82,3 +101,4 @@ namespace TwistCLI
         }
     }
 }
+
