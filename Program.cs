@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace TwistCLIFive
+namespace TwistCLI
 {
     class MainClass
     {
