@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace TwistCLIFive
+namespace TwistLockAPI
 {
     public static class coms
     {
