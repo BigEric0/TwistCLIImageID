@@ -48,7 +48,7 @@ namespace TwistCLI
                     Directory.Delete(twistDir, true);
                 }
                 coms.Bash($"mkdir {twistDir}");
-                
+
                 coms.Bash($"curl -k -u {username}:{password} --output {twistLockUnix} {address}/api/v1/util/twistcli");
                 coms.Bash($"chmod u+x {twistLockUnix}");
                 string lineNum = coms.Bash("docker images | head | awk 'END{print NR}'");
@@ -80,14 +80,29 @@ namespace TwistCLI
                 string getTwist = coms.WinCli($"curl -k -u {username}:{password} --output {twistLock} {address}/api/v1/util/windows/twistcli.exe");
                 Console.Write(getTwist);
                 string imageIds = "for /f \"tokens=3 skip=1\" %i in (\'docker images\') do @echo %i";
+                //Console.WriteLine(imageIds);
                 string getImageIds = coms.WinCli(imageIds);
                 string[] lineInt = getImageIds.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                var temp = new List<string>();
+                foreach (var s in lineInt)
+                {
+                    if (!string.IsNullOrEmpty(s))
+                        temp.Add(s);
+                    if (s.Contains("Windows"))
+                        temp.Remove(s);
+                    if (s.Contains("Microsoft"))
+                        temp.Remove(s);
+                    if (s.Contains(dir))
+                        temp.Remove(s);
+                }
+                lineInt = temp.ToArray();
                 List<string> scanList = new List<string>();
                 foreach (var i in lineInt)
                 {
                     string twistScan = coms.WinCli($"{twistLock} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {i}");
                     Console.WriteLine(twistScan);
                     scanList.Add(twistScan);
+                    scanList.Add(i);
                     if (scanList.Contains("FAIL"))
                     {
                         break;
@@ -101,4 +116,3 @@ namespace TwistCLI
         }
     }
 }
-
