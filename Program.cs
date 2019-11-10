@@ -36,7 +36,9 @@ namespace TwistCLI
                     scanList.Add(twistScan);
                     if (scanList.Contains("FAIL"))
                     {
-                        break;
+                        Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
+                        int code = 1;
+                        Environment.Exit(code);
                     }
                 }
             }
@@ -62,7 +64,9 @@ namespace TwistCLI
                     scanList.Add(twistScan);
                     if (scanList.Contains("FAIL"))
                     {
-                        break;
+                        Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
+                        int code = 1;
+                        Environment.Exit(code);
                     }
                 }
             }
@@ -105,7 +109,9 @@ namespace TwistCLI
                     scanList.Add(i);
                     if (scanList.Contains("FAIL"))
                     {
-                        break;
+                        Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
+                        int code = 1;
+                        Environment.Exit(code);
                     }
                 }
             }
