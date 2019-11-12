@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace TwistCLI
+namespace TwistCLITest
 {
     class MainClass
     {
@@ -15,6 +16,7 @@ namespace TwistCLI
             string dir = System.IO.Directory.GetCurrentDirectory();
             string twistDir = $"{dir}/twistlock";
             string twistLockUnix = $"{twistDir}/twistcli";
+            string threshold = "high";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 bool directoryExists = Directory.Exists(twistDir);
@@ -25,21 +27,36 @@ namespace TwistCLI
                 coms.Bash($"mkdir {twistDir}");
                 coms.Bash($"curl -k -u {username}:{password} --output {twistLockUnix} {address}/api/v1/util/osx/twistcli");
                 coms.Bash($"chmod u+x {twistLockUnix}");
-                string lineNum = coms.Bash("docker images | head | awk 'END{print NR}'");
-                int lineInt = Int32.Parse(lineNum);
-                List<string> scanList = new List<string>();
-                for (int i = 2; i <= lineInt; i++)
+                string test = coms.Bash($"docker images");
+                string[] testArr = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                var temp = new List<string>();
+                foreach (var s in testArr)
                 {
-                    string dockerImageCom = coms.Bash($"docker images | head -{lineInt} | awk '{{print $3}}' | sed -n '{i} p'");
-                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {dockerImageCom}");
+                    if (!string.IsNullOrEmpty(s))
+                        temp.Add(s);
+                }
+                testArr = temp.ToArray();
+                  
+                int countT = testArr.Length;
+                Console.Write(countT);
+                List<string> scanList = new List<string>();
+                for (int i = 1; i < countT; i++)
+                {
+                    string dockerImageCom = coms.Bash($"docker images | head -{countT} | awk '{{print $3}}' | sed -n '{i} p'");
+                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {dockerImageCom}");
                     Console.Write(twistScan);
                     scanList.Add(twistScan);
-                    if (scanList.Contains("FAIL"))
-                    {
-                        Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
-                        int code = 1;
-                        Environment.Exit(code);
-                    }
+                }
+                string[] scanListArr = scanList.ToArray();
+                if (scanListArr.Any(s => s.Contains("Vulnerability threshold check results: FAIL")))
+                {
+                    Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
+                    int code = 1;
+                    Environment.Exit(code);
+                }
+                else
+                {
+                    Console.WriteLine($"All images received a PASS when checked against the designated threshold of {threshold}");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -50,24 +67,37 @@ namespace TwistCLI
                     Directory.Delete(twistDir, true);
                 }
                 coms.Bash($"mkdir {twistDir}");
-
                 coms.Bash($"curl -k -u {username}:{password} --output {twistLockUnix} {address}/api/v1/util/twistcli");
                 coms.Bash($"chmod u+x {twistLockUnix}");
-                string lineNum = coms.Bash("docker images | head | awk 'END{print NR}'");
-                int lineInt = Int32.Parse(lineNum);
-                List<string> scanList = new List<string>();
-                for (int i = 2; i <= lineInt; i++)
+                string test = coms.Bash($"docker images");
+                string[] testArr = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                var temp = new List<string>();
+                foreach (var s in testArr)
                 {
-                    string dockerImageCom = coms.Bash($"docker images | head -{lineInt} | awk '{{print $3}}' | sed -n '{i} p'");
-                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {dockerImageCom}");
+                    if (!string.IsNullOrEmpty(s))
+                        temp.Add(s);
+                }
+                testArr = temp.ToArray();
+                int countT = testArr.Length;
+                Console.WriteLine(countT);
+                List<string> scanList = new List<string>();
+                for (int i = 1; i < countT; i++)
+                {
+                    string dockerImageCom = coms.Bash($"docker images | head -{countT} | awk '{{print $3}}' | sed -n '{i} p'");
+                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {dockerImageCom}");
                     Console.Write(twistScan);
                     scanList.Add(twistScan);
-                    if (scanList.Contains("FAIL"))
-                    {
-                        Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
-                        int code = 1;
-                        Environment.Exit(code);
-                    }
+                }
+                string[] scanListArr = scanList.ToArray();
+                if (scanListArr.Any(s => s.Contains("Vulnerability threshold check results: FAIL")))
+                {
+                    Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
+                    int code = 1;
+                    Environment.Exit(code);
+                }
+                else
+                {
+                    Console.WriteLine($"All images received a PASS when checked against the designated threshold of {threshold}");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -100,19 +130,24 @@ namespace TwistCLI
                         temp.Remove(s);
                 }
                 lineInt = temp.ToArray();
-                List<string> scanList = new List<string>();
+
+                var scanList = new List<string>();
                 foreach (var i in lineInt)
                 {
-                    string twistScan = coms.WinCli($"{twistLock} images scan -u {username} -p {password} --address {address} --vulnerability-threshold high {i}");
-                    Console.WriteLine(twistScan);
+                    string twistScan = coms.WinCli($"{twistLock} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {i}");
+                    Console.Write(twistScan);
                     scanList.Add(twistScan);
-                    scanList.Add(i);
-                    if (scanList.Contains("FAIL"))
-                    {
-                        Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
-                        int code = 1;
-                        Environment.Exit(code);
-                    }
+                }
+                string[] scanListArr = scanList.ToArray();
+                if (scanListArr.Any(s => s.Contains("Vulnerability threshold check results: FAIL")))
+                {
+                    Console.WriteLine("The task failed because images exist with vulnerabilities that exceed the designated threshold");
+                    int code = 1;
+                    Environment.Exit(code);
+                }
+                else
+                {
+                    Console.WriteLine($"All images received a PASS when checked against the designated threshold of {threshold}");
                 }
             }
             else
