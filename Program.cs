@@ -34,14 +34,14 @@ namespace TwistCLI
                 {
                     if (!string.IsNullOrEmpty(s))
                         temp.Add(s);
+                    if (s.Contains("IMAGE"))
+                        temp.Remove(s);
                 }
                 testArr = temp.ToArray();
-                int countT = testArr.Length;
                 List<string> scanList = new List<string>();
-                for (int i = 1; i < countT; i++)
+                foreach (var i in testArr)
                 {
-                    string dockerImageCom = coms.Bash($"docker images | head -{countT} | awk '{{print $3}}' | sed -n '{i} p'");
-                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {dockerImageCom}");
+                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {i}");
                     Console.Write(twistScan);
                     scanList.Add(twistScan);
                 }
@@ -67,22 +67,21 @@ namespace TwistCLI
                 coms.Bash($"mkdir {twistDir}");
                 coms.Bash($"curl -k -u {username}:{password} --output {twistLockUnix} {address}/api/v1/util/twistcli");
                 coms.Bash($"chmod u+x {twistLockUnix}");
-                string test = coms.Bash($"docker images");
+                string test = coms.Bash($"docker images | awk '{{print $3}}'");
                 string[] testArr = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
                 var temp = new List<string>();
                 foreach (var s in testArr)
                 {
                     if (!string.IsNullOrEmpty(s))
                         temp.Add(s);
+                    if (s.Contains("IMAGE"))
+                        temp.Remove(s);
                 }
                 testArr = temp.ToArray();
-                int countT = testArr.Length;
-                Console.WriteLine(countT);
                 List<string> scanList = new List<string>();
-                for (int i = 1; i < countT; i++)
+                foreach (var i in testArr)
                 {
-                    string dockerImageCom = coms.Bash($"docker images | head -{countT} | awk '{{print $3}}' | sed -n '{i} p'");
-                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {dockerImageCom}");
+                    string twistScan = coms.Bash($"{twistLockUnix} images scan -u {username} -p {password} --address {address} --vulnerability-threshold {threshold} {i}");
                     Console.Write(twistScan);
                     scanList.Add(twistScan);
                 }
