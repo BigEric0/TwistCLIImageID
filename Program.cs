@@ -36,9 +36,7 @@ namespace TwistCLITest
                         temp.Add(s);
                 }
                 testArr = temp.ToArray();
-                  
                 int countT = testArr.Length;
-                Console.Write(countT);
                 List<string> scanList = new List<string>();
                 for (int i = 1; i < countT; i++)
                 {
