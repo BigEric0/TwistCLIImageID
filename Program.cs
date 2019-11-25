@@ -27,7 +27,7 @@ namespace TwistCLI
                 coms.Bash($"mkdir {twistDir}");
                 coms.Bash($"curl -k -u {username}:{password} --output {twistLockUnix} {address}/api/v1/util/osx/twistcli");
                 coms.Bash($"chmod u+x {twistLockUnix}");
-                string test = coms.Bash($"docker images");
+                string test = coms.Bash($"docker images | awk '{{print $3}}'");
                 string[] testArr = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
                 var temp = new List<string>();
                 foreach (var s in testArr)
