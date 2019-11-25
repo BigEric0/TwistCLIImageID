@@ -10,7 +10,7 @@ namespace TwistCLI
     {
         public static void Main(string[] args)
         {
-            string address = "https://104.43.131.93:8083";
+            string address = "https://13.89.222.174:8083/";
             string username = "ryan.brown@csiweb.com";
             string password = args[0];
             string dir = System.IO.Directory.GetCurrentDirectory();
