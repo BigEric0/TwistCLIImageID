@@ -10,8 +10,8 @@ namespace TwistCLI
     {
         public static void Main(string[] args)
         {
-            string address = "https://40.122.39.126:8083";
-            string username = "ryan.brown@csiweb.com";
+            string address = "https://52.176.103.142:8083";
+            string username = "Ryan.Brown@csiweb.com";
             string password = args[0];
             string dir = System.IO.Directory.GetCurrentDirectory();
             string twistDir = $"{dir}/twistlock";
